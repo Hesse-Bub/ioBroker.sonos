@@ -613,14 +613,14 @@ function createChannel(name, ip, room, callback) {
     }
     const id = ip.replace(/[.\s]+/g, '_');
 
-    adapter.createChannel('root', id, 
+    adapter.createChannel('root', id,
         {
             role: 'media.music',
             name: name || ip
-        }, 
+        },
         {
             ip: ip
-        }, 
+        },
         (err, obj) => callback && callback(err, obj)
     );
 
@@ -644,7 +644,7 @@ function createChannel(name, ip, room, callback) {
             },
             native: {},
             type: 'state'
-        }, 
+        },
         err => err && adapter.log.error(err)
     );
 }
@@ -1397,7 +1397,7 @@ function processSonosEvents(event, data) {
                 for (j = 0; j < data[i].members.length; j++) {
                     member = discovery.getPlayerByUUID(data[i].members[j].uuid);
                     if (!member._address) member._address = getIp(member);
-                    
+
                     member_ip = member._address;
                     if (channels[member_ip]) {
                         channels[member_ip].uuid = data[i].members[j].uuid;
@@ -1696,6 +1696,13 @@ function main() {
     _path.pop();
     cacheDir = _path.join('/') + '/sonosCache/';
 
+//Hessebub: create sonosCache folder
+    fs.mkdir(cacheDir, e => {
+        if (e && e.code !== 'EEXIST') {
+            adapter.log.error('creating cache dir failed.', e);
+        }
+    });
+
     discovery = new SonosDiscovery({
         household:  null,
         log:        adapter.log, //logger,
@@ -1748,13 +1755,13 @@ function main() {
                 processSonosEvents('queue', {uuid: player.uuid, queue});
             });
     });
-    
+
     discovery.on('list-change', data => {
         //console.log('queue-change', data);
         socketServer && socketServer.sockets.emit('favorites', data);
         processSonosEvents('favorites', data);
     });
-    
+
     function loadQueue(uuid) {
         if (queues[uuid]) {
             return Promise.resolve(queues[uuid]);
@@ -1811,7 +1818,7 @@ function main() {
                     callback(null, 'album');
                 });
             }
-        ], 
+        ],
             players.length, (err, result) => socket.emit('search-result', response));
     }
 }
